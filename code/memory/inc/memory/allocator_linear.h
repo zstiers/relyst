@@ -2,6 +2,11 @@
 
 #include "allocator.h"
 
+/*
+ * Copyright (c) 2019 Zachary Stiers
+ * License: https://github.com/zstiers/relyst/blob/master/LICENSE
+ */
+
 namespace relyst::memory {
 
 class AllocatorLinear : public Allocator {

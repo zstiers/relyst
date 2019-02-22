@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 Zachary Stiers
+ * License: https://github.com/zstiers/relyst/blob/master/LICENSE
+ */
+
 #include <collection/bitset.h>
 #include <memory/allocator_linear.h>
 

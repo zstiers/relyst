@@ -1,4 +1,9 @@
-// Crap for leak detection
+/*
+ * Copyright (c) 2019 Zachary Stiers
+ * License: https://github.com/zstiers/relyst/blob/master/LICENSE
+ */
+
+ // Crap for leak detection
 #define _CRTDBG_MAP_ALLOC  
 #include <stdlib.h>  
 #include <crtdbg.h>
