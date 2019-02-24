@@ -23,13 +23,7 @@ solution "all"
 		libdirs { "../ext/lib/release/" .. _ACTION .. "/x64" }
 
 	configuration {}
-	dofile "../code/modules.lua"	
-
-	-- Prepare for include dependencies by getting all the include dirs
-	local dirsInc = {}
-	for i, prj in ipairs(solution().projects) do
-		dirsInc[prj.name] = path.join(prj.basedir, "../inc")
-	end
+	dofile "../code/modules.lua"
 
 	-- Apply dependencies
 	for i, prj in ipairs(solution().projects) do
