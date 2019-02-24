@@ -38,7 +38,6 @@ function project_dependencies_apply_internal(recursePrjName, allowPrivateInclude
 				local includeDir  = path.join(project(key).basedir, "../inc")
 				project(prevPrjName)
 				includedirs(includeDir)
-				print(project().name .. " includes " .. includeDir)
 			end
 			if projectHasSource[key] then
 				links(key)
