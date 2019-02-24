@@ -1,18 +1,5 @@
 dofile "genie/common.lua"
 
-depsInc = {}
-depsLib = {}
-
-function apply_deps_lib(prjName)
-	local prjDepsLib = depsLib[prjName];
-	if prjDepsLib then
-		links(prjDepsLib)
-		for i, dep in ipairs(prjDepsLib) do
-			apply_deps_lib(dep)
-		end
-	end
-end
-
 solution "all"
 	configurations { "Debug", "Release" }
 	platforms { "x64" }
@@ -47,13 +34,7 @@ solution "all"
 	-- Apply dependencies
 	for i, prj in ipairs(solution().projects) do
 		project(prj.name)
-		local prjDepsInc = depsInc[prj.name];
-		if prjDepsInc then
-			for j, dep in ipairs(prjDepsInc) do
-				includedirs(dirsInc[dep])
-			end
-		end
-		apply_deps_lib(prj.name)
+		project_dependencies_apply()
 	end
 
 	--startproject "example-00-helloworld"
