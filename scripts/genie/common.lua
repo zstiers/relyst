@@ -14,8 +14,8 @@ function group_pop ()
 	currentGroup[#currentGroup] = nil
 end
 
-projectDeps      = { }
-projectHasSource = { }
+local projectDeps      = { }
+local projectHasSource = { }
 
 function project_dependency(dependsOn, scope)
 	local prj = project()
@@ -54,13 +54,9 @@ function project_dependencies_apply()
 end
 
 -- dir is the path to this project folder relative to the root
-function project_module (dir, name)
-	if name == nil then
-		name = path.getbasename(dir)
-	end
-
+function project_module (name)
+	local dir = path.getrelative(solution().basedir, path.join(os.getcwd(), ".."))
 	project(name)
-	dir = path.join("..", dir)
 
 	kind "StaticLib"
 	files {
@@ -69,29 +65,26 @@ function project_module (dir, name)
 		"../src/**.h",
 		"../src/**.inl",
 		"../src/**.cpp",
+		"../scripts/**.*",
 	}
 	vpaths {
-		["inc/*"] = path.join(dir, "inc", "**.*"),
-		["src/*"] = path.join(dir, "src", "**.*"),
+		["inc/*"]     = path.join(dir, "inc", "**.*"),
+		["src/*"]     = path.join(dir, "src", "**.*"),
+		["scripts/*"] = path.join(dir, "scripts", "**.*"),
 	}
-	includedirs { "../inc" }
 
 	project_dependency(name, "private")
 	projectHasSource[name] = next(os.matchfiles("../src/**.cpp")) ~= nil
 end
 
 -- dir is the path to this project folder relative to the root
-function project_module_test (dir, name)
-	if name == nil then
-		name = path.getbasename(dir)
-	end
-	
+function project_module_test (name)
+	local dir = path.getrelative(solution().basedir, path.join(os.getcwd(), ".."))
 	project(name .. "_test")
-	dir = path.join("../", dir)
 
 	kind "ConsoleApp"
 	files { "../test/**.cpp" }
 	vpaths { ["*"] = path.join(dir, "test") }
-	includedirs { "../inc" }
+
 	project_dependency(name, "private")
 end
