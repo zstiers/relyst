@@ -3,3 +3,5 @@
  * License: https://github.com/zstiers/relyst/blob/master/LICENSE
  */
 
+int main() {
+}

@@ -1,5 +1,5 @@
 group_push("relyst")
-	dofile "collection/scripts/projects.lua"
-	dofile "core/scripts/projects.lua"
-	dofile "memory/scripts/projects.lua"
+	for i, dir in ipairs(os.matchdirs("*")) do
+		dofile(path.join(dir, "scripts/projects.lua"))
+	end
 group_pop()
