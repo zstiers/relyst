@@ -1,8 +1,8 @@
-group_push("runtime")
-	project_module("runtime")
+group_push("database")
+	project_module("database")
 		project_dependency("collection", "public")
 		project_dependency("core", "public")
 		project_dependency("memory", "public")
 
-	project_module_test("runtime")
+	project_module_test("database")
 group_pop()
