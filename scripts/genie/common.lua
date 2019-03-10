@@ -33,13 +33,11 @@ function project_dependencies_apply_internal(recursePrjName, allowPrivateInclude
 	local prjDeps = projectDeps[recursePrjName]
 	if prjDeps then
 		for key, dep in pairs(prjDeps) do
-			if allowPrivateIncludes or dep.scope == "public" then
-				local prevPrjName = project().name
-				local includeDir  = path.join(project(key).basedir, "../inc")
-				project(prevPrjName)
-				includedirs(includeDir)
+			local targetPrj = solution().projects[key]
+			if targetPrj ~= nil and (allowPrivateIncludes or dep.scope == "public") then
+				includedirs(path.join(targetPrj.basedir, "../inc"))
 			end
-			if projectHasSource[key] then
+			if targetPrj == nil or projectHasSource[key] then
 				links(key)
 			end
 			project_dependencies_apply_internal(key, false, traversed)
