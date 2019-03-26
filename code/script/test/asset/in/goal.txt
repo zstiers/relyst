@@ -1,0 +1,12 @@
+namespace A {
+	struct B: X.Y;
+	struct C: X, Y;
+}
+
+namespace Foo {
+	struct Bar: surrogate;
+}
+
+namespace attach {
+	compnt Target: surrogate, Foo.Bar;
+}

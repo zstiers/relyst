@@ -81,6 +81,7 @@ function project_module_test (name)
 	project(name .. "_test")
 
 	kind "ConsoleApp"
+	defines("TEST_ASSET_DIR=\"" .. path.join(os.getcwd(), "..", "test", "asset") .. "\"")
 	files { "../test/**.cpp" }
 	vpaths { ["*"] = path.join(dir, "test") }
 

@@ -4,3 +4,11 @@
  */
 
 #pragma once
+
+#include <string_view>
+
+namespace relyst::script {
+
+void Parse (const std::string_view & text);
+
+} // relyst::script

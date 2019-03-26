@@ -8,7 +8,6 @@ solution "all"
 	flags { "CppLatest" }
 	
 	includedirs { "../ext/inc" }
-	defines { "FMT_HEADER_ONLY" }
 
     configuration "Debug"
         targetdir (path.join("../.build/bin/all/" .. _ACTION, "debug"))

@@ -1,0 +1,38 @@
+namespace attach {
+	compnt Target: surrogate;
+}
+
+namespace move {
+	const kGravity = 9.8f32;
+
+	[after(update.Begin)]
+	once Update () {
+		UpdateGravity(update.DeltaTime);
+		UpdatePositions(update.DeltaTime);
+	}
+
+	join UpdateGravity (f32 dt) {
+		physics.Velocity[$] -= kGravity * dt;
+	}
+
+	join UpdatePositions (f32 dt) {
+		transform.Position[$] += physics.Velocity[$] * dt;
+	}
+}
+
+namespace physics {
+	compnt Velocity: f32[3];
+}
+
+namespace transform {
+	compnt Position: f32[3];
+}
+
+namespace update {
+	shared DeltaTime: f32;
+
+	[manual]
+	once Update (f32 dt) {
+		DeltaTime = dt;
+	}
+}
