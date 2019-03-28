@@ -40,7 +40,7 @@ class TableShared {
     Scope m_globalScope;
 
 public:
-    TableShared (const ast::NodePtr & astRoot);
+    TableShared (const ast::Node * astRoot);
 };
 
 } // namespace relyst::intermediate::symbol

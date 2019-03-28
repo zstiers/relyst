@@ -14,103 +14,47 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/ostreamwrapper.h>
 #include <iostream>
+#include <chrono>
 
 #include <intermediate/symbol.h>
+#include <memory/allocator_linear.h>
+#include <memory/size.h>
 
 namespace relyst::script {
 
-using namespace relyst::intermediate;
-
-template <typename W>
-struct JsonTo {
-    W & writer;
-
-    void operator() (const ast::Node & node) {
-        writer.StartObject();
-        if (auto * debugInfo = node.GetDebugInfo())
-            AddMemberObject("!debugInfo", *debugInfo);
-        std::visit(*this, node.v);
-        writer.EndObject();
-    }
-    void operator() (const ast::NodePtr & nodePtr) {
-        if (nodePtr)
-            operator()(*nodePtr);
-        else
-            writer.Null();
-    }
-    void operator() (const ast::DebugInfo & debugInfo) {
-        AddMemberObject("sourceStart", debugInfo.sourceStart);
-        AddMemberObject("sourceStop",  debugInfo.sourceStop);
-    }
-    void operator() (const ast::SourceLocation & sourceLoc) {
-        writer.Key("line");
-        writer.Uint64(sourceLoc.line);
-        writer.Key("chPos");
-        writer.Uint64(sourceLoc.positionOnLine);
-    }
-    void operator() (const ast::BinaryExpression & bin) {
-    }
-    void operator() (const ast::Identifier & id) {
-        writer.Key("data");
-        writer.String(id.c_str(), id.length());
-    }
-    void operator() (const ast::List & list) {
-        writer.Key("data");
-        writer.StartArray();
-        for (const auto & item : list)
-            VisitSpecific(item);
-        writer.EndArray();
-    }
-    void operator() (const ast::Scope & scope) {
-        AddMemberNode("data", scope.data);
-    }
-    void operator() (const ast::ScopeNamed & scopeNamed) {
-        VisitSpecific<ast::Scope>(scopeNamed);
-        AddMemberNode("name", scopeNamed.name);
-    }
-    void operator() (const ast::Struct & strct) {
-        AddMemberNode("name", strct.name);
-        AddMemberNode("bases", strct.bases);
-    }
-    void operator() (const ast::UnaryExpression & bin) {
-
-    }
-    template <typename Unhandled>
-    void operator() (const Unhandled &) {
-    }
-
-private:
-    void AddMemberNode (const char * name, const ast::NodePtr & nodePtr) {
-        writer.Key(name);
-        VisitSpecific(nodePtr);
-    }
-    template <typename T>
-    void AddMemberObject (const char * name, const T & t) {
-        writer.Key(name);
-        writer.StartObject();
-        VisitSpecific(t);
-        writer.EndObject();
-    }
-    template <typename T>
-    void VisitSpecific (const T & t) {
-        operator()(t);
-    }
-};
-
 void Parse (const std::string_view & text) {
+    auto clock = std::chrono::high_resolution_clock::now();
+    auto nextProfile = [&clock](const char * msg) {
+        const auto elapsed = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - clock).count();
+        std::cout << msg << ": " << elapsed << '\n';
+        clock = std::chrono::high_resolution_clock::now();
+    };
+
     antlr4::ANTLRInputStream input(text.data(), text.length());
+    nextProfile("Input");
     relystLexer lexer(&input);
+    nextProfile("Lexer");
     antlr4::CommonTokenStream tokens(&lexer);
+    nextProfile("Tokens");
     relystParser parser(&tokens);
+    nextProfile("Parser");
 
-    AstBuilderVisitor visitor;
-    auto rootNode = visitor.Visit(parser.compileUnit());
+    std::vector<char> treeBuffer(0.1_GiB);
+    memory::AllocatorLinear treeAlloc(treeBuffer.data(), treeBuffer.data() + treeBuffer.size());
+    std::vector<char> stringBuffer(0.1_GiB);
+    memory::AllocatorLinear stringAlloc(stringBuffer.data(), stringBuffer.data() + stringBuffer.size());
+    nextProfile("Alloc");
 
-    //rapidjson::OStreamWrapper ostream(std::cout);
-    //rapidjson::PrettyWriter writer(ostream);
-    //JsonTo<decltype(writer)>{ writer }(rootNode);
+    AstBuilderVisitor visitor(treeAlloc, stringAlloc);
+    ast::Node * rootNode;
+    visitor.Visit(parser.compileUnit(), rootNode);
+    nextProfile("Visit");
 
-    intermediate::symbol::TableShared sharedTable(rootNode);
+    intermediate::symbol::TableShared table(rootNode);
+    nextProfile("Global Table");
+
+    std::cout << "Used memory (string): " << (stringBuffer.size() - stringAlloc.GetRemainingBytes(1)) << " bytes\n";
+    std::cout << "Used memory (tree):   " << (treeBuffer.size() - treeAlloc.GetRemainingBytes(1)) << " bytes\n";
 }
 
 } // relyst::script

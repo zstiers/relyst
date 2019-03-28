@@ -23,6 +23,8 @@ public:
 public: // Templated helpers
     template <typename T>
     inline T * Alloc ();
+    template <typename T>
+    inline T * AllocN (std::size_t count);
 };
 
 } // relyst::memory

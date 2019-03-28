@@ -3,10 +3,10 @@ namespace A {
 	struct C: X, Y;
 }
 
-namespace Foo {
-	struct Bar: surrogate;
+namespace Foo.Bar {
+	struct Caz: surrogate;
 }
 
 namespace attach {
-	compnt Target: surrogate, Foo.Bar;
+	compnt Target: surrogate, Foo.Bar.Caz;
 }

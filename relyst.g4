@@ -13,12 +13,8 @@ definitionList
 	:	(definition ';'*)+
 	;
 
-name
-	:	ID
-	;
-
 nameScoped
-	:	(name '.')* name
+	:	(ID '.')* ID
 	;
 
 namespaceDefinition
@@ -26,7 +22,7 @@ namespaceDefinition
 	;
 
 structDefinition
-	:	('compnt' | 'component' | 'struct') name ':' typeList ';'
+	:	('compnt' | 'component' | 'struct') name=ID ':' typeList ';'
 	;
 
 type

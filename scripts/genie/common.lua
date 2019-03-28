@@ -64,11 +64,13 @@ function project_module (name)
 		"../src/**.inl",
 		"../src/**.cpp",
 		"../scripts/**.*",
+		"../visualizers/**.natvis",
 	}
 	vpaths {
-		["inc/*"]     = path.join(dir, "inc", "**.*"),
-		["src/*"]     = path.join(dir, "src", "**.*"),
-		["scripts/*"] = path.join(dir, "scripts", "**.*"),
+		["inc/*"]         = path.join(dir, "inc", "**.*"),
+		["src/*"]         = path.join(dir, "src", "**.*"),
+		["scripts/*"]     = path.join(dir, "scripts", "**.*"),
+		["visualizers/*"] = path.join(dir, "visualizers", "**.*"),
 	}
 
 	project_dependency(name, "private")

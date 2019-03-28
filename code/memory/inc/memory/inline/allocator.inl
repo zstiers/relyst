@@ -16,6 +16,11 @@ inline T * Allocator::Alloc () {
     return new(Alloc(sizeof(T), alignof(T))) T();
 }
 
+template <typename T>
+inline T * Allocator::AllocN (std::size_t count) {
+    return new(Alloc(sizeof(T) * count, alignof(T))) T[count];
+}
+
 inline void * Allocator::Realloc (void * oldMem, std::size_t oldSize, std::size_t newSize, std::size_t align) {
     return m_reallocFunc(this, oldMem, oldSize, newSize, align);
 }

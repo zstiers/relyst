@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="relyst::intermediate::ast::List&lt;*&gt;">
+    <Intrinsic Name="size" Expression="m_end - m_begin" />
+    <Intrinsic Name="capacity" Expression="m_reservationEnd - m_begin" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">size()</Item>
+      <Item Name="[capacity]" ExcludeView="simple">capacity()</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>m_begin</ValuePointer>
+        </ArrayItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>

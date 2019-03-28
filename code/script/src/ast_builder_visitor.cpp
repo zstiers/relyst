@@ -5,82 +5,107 @@
 
 #include "ast_builder_visitor.h"
 
-#include <iostream>
+#include <variant>
 
 namespace relyst::script {
 
+template <typename T, typename U>
+ast::List<T> AstBuilderVisitor::CreateList (antlr4::ParserRuleContext * ctx, const std::vector<U *> & list) {
+    ast::List<T> ret(m_treeAlloc, list.size());
+    T childOut;
+    for (auto * childIn : list) {
+        if (Visit(childIn, childOut))
+            ret.Push(childOut);
+    }
+    return ret;
+}
+
 template <typename T>
-intermediate::ast::NodePtr AstBuilderVisitor::CreateList (antlr4::ParserRuleContext * ctx, const std::vector<T *> & list) {
-    auto   ret = CreateNode(ctx);
-    auto & v   = ret->v.emplace<relyst::intermediate::ast::List>();
-    v.reserve(list.size());
-    for (auto * child : list) {
-        auto node = Visit(child);
-        if (node)
-            v.push_back(node);
-    }
+T * AstBuilderVisitor::CreateNode (antlr4::ParserRuleContext * ctx, ast::NodeType type) {
+    auto ret      = m_treeAlloc.Alloc<T>();
+    ret->nodeType = type;
     return ret;
 }
 
-intermediate::ast::NodePtr AstBuilderVisitor::CreateNode (antlr4::ParserRuleContext * ctx) {
-    auto ret = std::make_shared<relyst::intermediate::ast::Node>();
-    if (auto * debugInfo = ret->GetDebugInfo()) {
-        debugInfo->sourceStart.line           = ctx->getStart()->getLine();
-        debugInfo->sourceStart.positionOnLine = ctx->getStart()->getCharPositionInLine();
-        debugInfo->sourceStop.line            = ctx->getStop()->getLine();
-        debugInfo->sourceStop.positionOnLine  = ctx->getStop()->getCharPositionInLine();
-    }
+template <typename T>
+T AstBuilderVisitor::Visit (antlr4::ParserRuleContext * ctx) {
+    T ret;
+    Visit(ctx, ret);
     return ret;
 }
 
-intermediate::ast::NodePtr AstBuilderVisitor::Visit (antlr4::ParserRuleContext * ctx) {
+template <typename T>
+bool AstBuilderVisitor::Visit (antlr4::ParserRuleContext * ctx, T & out) {
     if (ctx) {
         auto ret = visit(ctx);
-        if (ret.isNotNull())
-            return std::move(ret.as<intermediate::ast::NodePtr>());
+        if (ret.isNotNull()) {
+            out = ret.as<T>();
+            return true;
+        }
     }
-    return intermediate::ast::NodePtr();
+    out = T();
+    return false;
+}
+
+bool AstBuilderVisitor::Visit (antlr4::Token * token, ast::Identifier & out) {
+    out = ast::Identifier(m_stringAlloc, token->getText());
+    return true;
 }
 
 antlrcpp::Any AstBuilderVisitor::visitCompileUnit (relystParser::CompileUnitContext * ctx) {
-    auto   ret = CreateNode(ctx);
-    auto & v   = ret->v.emplace<intermediate::ast::Scope>();
-    v.data = Visit(ctx->definitionList());
-    return ret;
+    auto ret = CreateNode<ast::Scope>(ctx, ast::NodeType::kRoot);
+    Visit(ctx->definitionList(), ret->children);
+    return static_cast<ast::Node *>(ret);
 }
 
 antlrcpp::Any AstBuilderVisitor::visitDefinitionList (relystParser::DefinitionListContext * ctx) {
-    return CreateList(ctx, ctx->definition());
-}
-
-antlrcpp::Any AstBuilderVisitor::visitName (relystParser::NameContext * ctx) {
-    auto ret = CreateNode(ctx);
-    ret->v.emplace<intermediate::ast::Identifier>(ctx->getText());
-    return ret;
+    return CreateList<ast::Node *>(ctx, ctx->definition());
 }
 
 antlrcpp::Any AstBuilderVisitor::visitNameScoped (relystParser::NameScopedContext * ctx) {
-    return CreateList(ctx, ctx->name());
+    const auto ids = ctx->ID();
+    ast::IdentifierScoped ret(m_treeAlloc, ids.size());
+    for (const auto & id : ids)
+        ret.Push(ast::Identifier(m_stringAlloc, id->getText()));
+    return ret;
 }
 
 antlrcpp::Any AstBuilderVisitor::visitNamespaceDefinition (relystParser::NamespaceDefinitionContext * ctx) {
-    auto   ret = CreateNode(ctx);
-    auto & v   = ret->v.emplace<intermediate::ast::ScopeNamed>();
-    v.data = Visit(ctx->definitionList());
-    v.name = Visit(ctx->nameScoped());
-    return ret;
+    // Namespace syntax supports nesting, but my AST doesn't. These will get expanded to multiple nodes.
+    // The way it works is we return the node for the first namespace which already has the others nested in it.
+    // All the visits though happen in the furthest nested namespace.
+    auto ids  = Visit<ast::IdentifierScoped>(ctx->nameScoped());
+    auto iter = ids.begin();
+    auto end  = ids.end();
+
+    // Do the first node manually.
+    auto outer  = CreateNode<ast::Scope>(ctx, ast::NodeType::kNamespace);
+    outer->name = *iter;
+
+    // Chain in the rest of the nodes. After this `inner` should be the inner-most node.
+    auto inner = outer;
+    for (++iter; iter != end; ++iter) {
+        auto next  = CreateNode<ast::Scope>(ctx, ast::NodeType::kNamespace);
+        next->name = *iter;
+        inner->children = ast::List<ast::Node *>(m_treeAlloc, 1);
+        inner->children.Push(next);
+        inner = next;
+    }
+
+    // Now we can complete construction of the `inner` by filling the children.
+    Visit(ctx->definitionList(), inner->children);
+    return static_cast<ast::Node *>(outer);
 }
 
 antlrcpp::Any AstBuilderVisitor::visitStructDefinition (relystParser::StructDefinitionContext * ctx) {
-    auto   ret = CreateNode(ctx);
-    auto & v   = ret->v.emplace<intermediate::ast::Struct>();
-    v.name  = Visit(ctx->name());
-    v.bases = Visit(ctx->typeList());
-    return ret;
+    auto ret  = CreateNode<ast::Type>(ctx, ast::NodeType::kStruct);
+    Visit(ctx->name,       ret->name);
+    Visit(ctx->typeList(), ret->bases);
+    return static_cast<ast::Node *>(ret);
 }
 
 antlrcpp::Any AstBuilderVisitor::visitTypeList (relystParser::TypeListContext * ctx) {
-    return CreateList(ctx, ctx->type());
+    return CreateList<ast::IdentifierScoped>(ctx, ctx->type());
 }
 
 } // relyst::script

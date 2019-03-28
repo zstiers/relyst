@@ -11,19 +11,31 @@
 
 namespace relyst::script {
 
+namespace ast { using namespace ::relyst::intermediate::ast; }
+
 class AstBuilderVisitor : private relystBaseVisitor {
+    memory::Allocator & m_treeAlloc;
+    memory::Allocator & m_stringAlloc;
+
 public:
-    intermediate::ast::NodePtr Visit (antlr4::ParserRuleContext * ctx);
+    AstBuilderVisitor (memory::Allocator & treeAlloc, memory::Allocator & stringAlloc) : m_treeAlloc(treeAlloc), m_stringAlloc(stringAlloc) { }
+
+public:
+    template <typename T>
+    T Visit (antlr4::ParserRuleContext * ctx);
+    template <typename T>
+    bool Visit (antlr4::ParserRuleContext * ctx, T & out);
+    bool Visit (antlr4::Token * token, ast::Identifier & out);
 
 private:
+    template <typename T, typename U>
+    ast::List<T> CreateList (antlr4::ParserRuleContext * ctx, const std::vector<U *> & list);
     template <typename T>
-    intermediate::ast::NodePtr CreateList (antlr4::ParserRuleContext * ctx, const std::vector<T *> & list);
-    intermediate::ast::NodePtr CreateNode (antlr4::ParserRuleContext * ctx);
+    T * CreateNode (antlr4::ParserRuleContext * ctx, ast::NodeType type);
 
 private:
     antlrcpp::Any visitCompileUnit (relystParser::CompileUnitContext * ctx) override;
     antlrcpp::Any visitDefinitionList (relystParser::DefinitionListContext * ctx) override;
-    antlrcpp::Any visitName (relystParser::NameContext * ctx) override;
     antlrcpp::Any visitNameScoped (relystParser::NameScopedContext * ctx) override;
     antlrcpp::Any visitNamespaceDefinition (relystParser::NamespaceDefinitionContext * ctx) override;
     antlrcpp::Any visitStructDefinition (relystParser::StructDefinitionContext * ctx) override;

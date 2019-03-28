@@ -25,8 +25,6 @@ public:
 
     virtual antlrcpp::Any visitDefinitionList(relystParser::DefinitionListContext *context) = 0;
 
-    virtual antlrcpp::Any visitName(relystParser::NameContext *context) = 0;
-
     virtual antlrcpp::Any visitNameScoped(relystParser::NameScopedContext *context) = 0;
 
     virtual antlrcpp::Any visitNamespaceDefinition(relystParser::NamespaceDefinitionContext *context) = 0;

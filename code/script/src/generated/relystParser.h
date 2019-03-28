@@ -18,9 +18,9 @@ public:
   };
 
   enum {
-    RuleCompileUnit = 0, RuleDefinition = 1, RuleDefinitionList = 2, RuleName = 3, 
-    RuleNameScoped = 4, RuleNamespaceDefinition = 5, RuleStructDefinition = 6, 
-    RuleType = 7, RuleTypeList = 8
+    RuleCompileUnit = 0, RuleDefinition = 1, RuleDefinitionList = 2, RuleNameScoped = 3, 
+    RuleNamespaceDefinition = 4, RuleStructDefinition = 5, RuleType = 6, 
+    RuleTypeList = 7
   };
 
   relystParser(antlr4::TokenStream *input);
@@ -36,7 +36,6 @@ public:
   class CompileUnitContext;
   class DefinitionContext;
   class DefinitionListContext;
-  class NameContext;
   class NameScopedContext;
   class NamespaceDefinitionContext;
   class StructDefinitionContext;
@@ -82,24 +81,12 @@ public:
 
   DefinitionListContext* definitionList();
 
-  class  NameContext : public antlr4::ParserRuleContext {
-  public:
-    NameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *ID();
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  NameContext* name();
-
   class  NameScopedContext : public antlr4::ParserRuleContext {
   public:
     NameScopedContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<NameContext *> name();
-    NameContext* name(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> ID();
+    antlr4::tree::TerminalNode* ID(size_t i);
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
    
@@ -122,10 +109,11 @@ public:
 
   class  StructDefinitionContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *name = nullptr;;
     StructDefinitionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    NameContext *name();
     TypeListContext *typeList();
+    antlr4::tree::TerminalNode *ID();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
    

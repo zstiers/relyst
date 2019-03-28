@@ -27,10 +27,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitName(relystParser::NameContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitNameScoped(relystParser::NameScopedContext *ctx) override {
     return visitChildren(ctx);
   }

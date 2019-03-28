@@ -12,8 +12,10 @@ solution "all"
     configuration "Debug"
         targetdir (path.join("../.build/bin/all/" .. _ACTION, "debug"))
         flags { "Symbols" }
+		defines { "RELYST_DEBUG=1" }
     configuration "Release"
         targetdir (path.join("../.build/bin/all/" .. _ACTION, "release"))
+		defines { "RELYST_DEBUG=0" }
 
 	-- Pick correct lib dirs
 	configuration { "Debug", "x64" }
