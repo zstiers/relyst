@@ -21,9 +21,9 @@ ast::List<T> AstBuilderVisitor::CreateList (antlr4::ParserRuleContext * ctx, con
 }
 
 template <typename T>
-T * AstBuilderVisitor::CreateNode (antlr4::ParserRuleContext * ctx, ast::NodeType type) {
-    auto ret      = m_treeAlloc.Alloc<T>();
-    ret->nodeType = type;
+T * AstBuilderVisitor::CreateNode (antlr4::ParserRuleContext * ctx, ast::NodeKind kind) {
+    auto ret  = m_treeAlloc.Alloc<T>();
+    ret->kind = kind;
     return ret;
 }
 
@@ -53,7 +53,7 @@ bool AstBuilderVisitor::Visit (antlr4::Token * token, ast::Identifier & out) {
 }
 
 antlrcpp::Any AstBuilderVisitor::visitCompileUnit (relystParser::CompileUnitContext * ctx) {
-    auto ret = CreateNode<ast::Scope>(ctx, ast::NodeType::kRoot);
+    auto ret = CreateNode<ast::Scope>(ctx, ast::NodeKind::kRoot);
     Visit(ctx->definitionList(), ret->children);
     return static_cast<ast::Node *>(ret);
 }
@@ -79,13 +79,13 @@ antlrcpp::Any AstBuilderVisitor::visitNamespaceDefinition (relystParser::Namespa
     auto end  = ids.end();
 
     // Do the first node manually.
-    auto outer  = CreateNode<ast::Scope>(ctx, ast::NodeType::kNamespace);
+    auto outer  = CreateNode<ast::Scope>(ctx, ast::NodeKind::kNamespace);
     outer->name = *iter;
 
     // Chain in the rest of the nodes. After this `inner` should be the inner-most node.
     auto inner = outer;
     for (++iter; iter != end; ++iter) {
-        auto next  = CreateNode<ast::Scope>(ctx, ast::NodeType::kNamespace);
+        auto next  = CreateNode<ast::Scope>(ctx, ast::NodeKind::kNamespace);
         next->name = *iter;
         inner->children = ast::List<ast::Node *>(m_treeAlloc, 1);
         inner->children.Push(next);
@@ -98,7 +98,13 @@ antlrcpp::Any AstBuilderVisitor::visitNamespaceDefinition (relystParser::Namespa
 }
 
 antlrcpp::Any AstBuilderVisitor::visitStructDefinition (relystParser::StructDefinitionContext * ctx) {
-    auto ret  = CreateNode<ast::Type>(ctx, ast::NodeType::kStruct);
+    ast::NodeKind kind = ast::NodeKind::kInvalid;
+    switch (ctx->kind->getType()) {
+        case relystParser::COMPONENT: kind = ast::NodeKind::kComponent; break;
+        case relystParser::STRUCT:    kind = ast::NodeKind::kStruct;    break;
+    }
+
+    auto ret = CreateNode<ast::Type>(ctx, kind);
     Visit(ctx->name,       ret->name);
     Visit(ctx->typeList(), ret->bases);
     return static_cast<ast::Node *>(ret);

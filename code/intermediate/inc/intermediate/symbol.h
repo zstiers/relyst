@@ -6,6 +6,8 @@
 #pragma once
 
 #include "ast.h"
+#include "symbol/const.h"
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -25,6 +27,10 @@ struct Type : Base {
         SymbolPtr<Type> type;
     };
 
+    TypeKind    typeKind = TypeKind::kInvalid;
+    std::size_t bytes    = 0;
+    std::size_t customId = 0;
+
     std::vector<SymbolPtr<Type>>            bases;
     std::unordered_map<std::string, Member> members;
 };
@@ -37,6 +43,7 @@ struct Scope : Base {
 // require ordering so this should be prebuilt. For symbols that do require order, such
 // as function bodies, a different stack-based approach will be used instead.
 class TableShared {
+public:
     Scope m_globalScope;
 
 public:

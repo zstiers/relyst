@@ -11,13 +11,13 @@
 
 namespace relyst::intermediate::ast {
 
-#define RELYST_NODE_TYPE_SECTION_BEGIN(name) k##name##First, k##name##Before = k##name##First - 1,
-#define RELYST_NODE_TYPE_SECTION_END(name)   k##name##After, k##name##Last   = k##name##After - 1,
+#define RELYST_NODE_KIND_SECTION_BEGIN(name) k##name##First, k##name##Before = k##name##First - 1,
+#define RELYST_NODE_KIND_SECTION_END(name)   k##name##After, k##name##Last   = k##name##After - 1,
 
-enum class NodeType {
+enum class NodeKind {
     kInvalid,
 
-    RELYST_NODE_TYPE_SECTION_BEGIN(Binary)
+    RELYST_NODE_KIND_SECTION_BEGIN(Binary)
     kAssign,
 
     kAdd,
@@ -56,25 +56,25 @@ enum class NodeType {
     kBitwiseXorAssign,
     kBitwiseLeftShiftAssign,
     kBitwiseRightShiftAssign,
-    RELYST_NODE_TYPE_SECTION_END(Binary)
+    RELYST_NODE_KIND_SECTION_END(Binary)
 
-    RELYST_NODE_TYPE_SECTION_BEGIN(Function)
+    RELYST_NODE_KIND_SECTION_BEGIN(Function)
     kEntry,
     kFork,
     kFunctionBasic,
-    RELYST_NODE_TYPE_SECTION_END(Function)
+    RELYST_NODE_KIND_SECTION_END(Function)
 
-    RELYST_NODE_TYPE_SECTION_BEGIN(Scope)
+    RELYST_NODE_KIND_SECTION_BEGIN(Scope)
     kNamespace,
     kRoot,
-    RELYST_NODE_TYPE_SECTION_END(Scope)
+    RELYST_NODE_KIND_SECTION_END(Scope)
 
-    RELYST_NODE_TYPE_SECTION_BEGIN(Type)
+    RELYST_NODE_KIND_SECTION_BEGIN(Type)
     kComponent,
     kStruct,
-    RELYST_NODE_TYPE_SECTION_END(Type)
+    RELYST_NODE_KIND_SECTION_END(Type)
 
-    RELYST_NODE_TYPE_SECTION_BEGIN(Unary)
+    RELYST_NODE_KIND_SECTION_BEGIN(Unary)
     kDecrementPre,
     kDecrementPost,
     kIncrementPre,
@@ -88,18 +88,18 @@ enum class NodeType {
     kNegate,
 
     kMemberAccess,
-    RELYST_NODE_TYPE_SECTION_END(Unary)
+    RELYST_NODE_KIND_SECTION_END(Unary)
 
-    RELYST_NODE_TYPE_SECTION_BEGIN(Variable)
+    RELYST_NODE_KIND_SECTION_BEGIN(Variable)
     kConst,
     kDupe,
     kRef,
-    RELYST_NODE_TYPE_SECTION_END(Variable)
+    RELYST_NODE_KIND_SECTION_END(Variable)
 
     kCount
 };
 
-#undef RELYST_NODE_TYPE_SECTION_BEGIN
-#undef RELYST_NODE_TYPE_SECTION_END
+#undef RELYST_NODE_KIND_SECTION_BEGIN
+#undef RELYST_NODE_KIND_SECTION_END
 
 } // namespace relyst::intermediate::ast

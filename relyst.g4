@@ -22,7 +22,7 @@ namespaceDefinition
 	;
 
 structDefinition
-	:	('compnt' | 'component' | 'struct') name=ID ':' typeList ';'
+	:	kind=(COMPONENT | STRUCT) name=ID ':' typeList ';'
 	;
 
 type
@@ -32,6 +32,9 @@ type
 typeList
 	:	(type ',')* type
 	;
+
+COMPONENT : 'compnt' | 'component';
+STRUCT    : 'struct';
 
 ID			  :	([a-zA-Z] | '_') ([a-zA-Z0-9] | '_')*;
 BLOCK_COMMENT :	'/*' .*? '*/' -> channel(HIDDEN);

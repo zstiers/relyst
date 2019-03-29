@@ -19,7 +19,7 @@ namespace relyst::intermediate::ast {
  */
 
 struct Node {
-    NodeType nodeType = NodeType::kInvalid;
+    NodeKind kind = NodeKind::kInvalid;
 
 #if RELYST_AST_FORCE_NODE_POLYMORPHISM
     virtual ~Node () { }

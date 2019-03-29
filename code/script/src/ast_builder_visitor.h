@@ -31,7 +31,7 @@ private:
     template <typename T, typename U>
     ast::List<T> CreateList (antlr4::ParserRuleContext * ctx, const std::vector<U *> & list);
     template <typename T>
-    T * CreateNode (antlr4::ParserRuleContext * ctx, ast::NodeType type);
+    T * CreateNode (antlr4::ParserRuleContext * ctx, ast::NodeKind kind);
 
 private:
     antlrcpp::Any visitCompileUnit (relystParser::CompileUnitContext * ctx) override;

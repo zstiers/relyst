@@ -38,6 +38,7 @@ public:
 
 struct VisitorBuildStubs {
     std::vector<Scope *> scopeStack;
+    std::size_t          nextComponentId = 1;
 
     void operator() (const ast::Node * nodePtr) {
         if (nodePtr)
@@ -49,8 +50,16 @@ struct VisitorBuildStubs {
             ast::Visit(*this, *child);
     }
     void operator() (const ast::Type & node) {
-        auto   type  = std::make_shared<Type>();
-        auto   id    = std::string(node.name);
+        auto type = std::make_shared<Type>();
+        if (node.kind == ast::NodeKind::kComponent) {
+            type->typeKind = TypeKind::kComponent;
+            type->customId = nextComponentId++;
+        }
+        else if (node.kind == ast::NodeKind::kStruct) {
+            type->typeKind = TypeKind::kStruct;
+        }
+
+        auto id = std::string(node.name);
         scopeStack.back()->children.insert(std::make_pair(id, type));
     }
 
@@ -63,6 +72,30 @@ struct VisitorBuildStubs {
         operator()(t);
     }
 };
+
+void InsertLanguageStubs (Scope & root) {
+    const auto makeType = [](TypeKind kind, std::size_t bytes) {
+        auto ret      = std::make_shared<Type>();
+        ret->typeKind = kind;
+        ret->bytes    = bytes;
+        return ret;
+    };
+
+    root.children.insert(std::make_pair("surrogate", makeType(TypeKind::kSurrogate, 0)));
+
+    root.children.insert(std::make_pair("f32", makeType(TypeKind::kFloat, 4)));
+    root.children.insert(std::make_pair("f64", makeType(TypeKind::kFloat, 8)));
+
+    root.children.insert(std::make_pair("i8",  makeType(TypeKind::kIntegerSigned, 1)));
+    root.children.insert(std::make_pair("i16", makeType(TypeKind::kIntegerSigned, 2)));
+    root.children.insert(std::make_pair("i32", makeType(TypeKind::kIntegerSigned, 4)));
+    root.children.insert(std::make_pair("i64", makeType(TypeKind::kIntegerSigned, 8)));
+
+    root.children.insert(std::make_pair("u8",  makeType(TypeKind::kIntegerUnsigned, 1)));
+    root.children.insert(std::make_pair("u16", makeType(TypeKind::kIntegerUnsigned, 2)));
+    root.children.insert(std::make_pair("u32", makeType(TypeKind::kIntegerUnsigned, 4)));
+    root.children.insert(std::make_pair("u64", makeType(TypeKind::kIntegerUnsigned, 8)));
+}
 
 struct VisitorLinkStubs {
     std::vector<Scope *> scopeStack;
@@ -117,6 +150,7 @@ TableShared::TableShared (const ast::Node * astRoot) {
     VisitorBuildStubs stubs;
     stubs.scopeStack.push_back(&m_globalScope);
     stubs(astRoot);
+    InsertLanguageStubs(m_globalScope);
 
     VisitorLinkStubs link;
     link.scopeStack.push_back(&m_globalScope);

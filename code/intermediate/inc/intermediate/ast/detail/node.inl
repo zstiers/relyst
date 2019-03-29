@@ -13,10 +13,10 @@ namespace relyst::intermediate::ast {
 // magic to do that, so I'll leave that for when I need it. 
 template <typename Visitor>
 void Visit (Visitor && vis, const Node & node) {
-    const auto nodeType = node.nodeType;
-    if (NodeType::kScopeFirst <= nodeType && nodeType <= NodeType::kScopeLast)
+    const auto kind = node.kind;
+    if (NodeKind::kScopeFirst <= kind && kind <= NodeKind::kScopeLast)
         return vis(static_cast<const Scope &>(node));
-    if (NodeType::kTypeFirst <= nodeType && nodeType <= NodeType::kTypeLast)
+    if (NodeKind::kTypeFirst <= kind && kind <= NodeKind::kTypeLast)
         return vis(static_cast<const Type &>(node));
 }
 

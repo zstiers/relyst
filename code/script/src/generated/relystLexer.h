@@ -13,8 +13,8 @@ class  relystLexer : public antlr4::Lexer {
 public:
   enum {
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
-    T__7 = 8, T__8 = 9, T__9 = 10, ID = 11, BLOCK_COMMENT = 12, LINE_COMMENT = 13, 
-    WHITE_SPACE = 14
+    COMPONENT = 8, STRUCT = 9, ID = 10, BLOCK_COMMENT = 11, LINE_COMMENT = 12, 
+    WHITE_SPACE = 13
   };
 
   relystLexer(antlr4::CharStream *input);

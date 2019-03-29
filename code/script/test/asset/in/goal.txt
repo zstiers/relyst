@@ -9,4 +9,6 @@ namespace Foo.Bar {
 
 namespace attach {
 	compnt Target: surrogate, Foo.Bar.Caz;
+	compnt Position: f32;
+	compnt Velocity: f32;
 }
